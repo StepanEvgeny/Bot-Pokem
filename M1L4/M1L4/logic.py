@@ -1,13 +1,7 @@
 from random import randint
-import random
-import requests
-from telegram import Update
-from telegram.ext import ContextTypes
 
-eating = ["Яблоко", "Банан", "Пикачу Бисквит", "Сладкий корень", 
-                  "Вкусный суп", "Орехи", "Медовый плод", "Морковь", 
-                  "Молоко Му-Му", "Лесные ягоды"
-                  ]
+import requests
+
 
 class Pokemon:
     pokemons = {}
@@ -19,14 +13,21 @@ class Pokemon:
         self.pokemon_number = randint(1,1000)
         self.img = self.get_img()
         self.name = self.get_name()
-        self.eat = self.get_eat()
+        self.hp = randint(1,100)
+        self.power = randint(1,100)
 
         Pokemon.pokemons[pokemon_trainer] = self
 
     # Метод для получения картинки покемона через API
     def get_img(self):
-        pass
-    
+        url = f'https://pokeapi.co/api/v2/pokemon/{self.pokemon_number}'
+        response = requests.get(url)
+        if response.status_code == 200:
+            data = response.json()
+            return (data['sprites']['other']['official-artwork']['front_default'])
+        else:
+            return "https://static.wikia.nocookie.net/pokemon/images/0/0d/025Pikachu.png/revision/latest/scale-to-width-down/1000?cb=20181020165701&path-prefix=ru"
+
     # Метод для получения имени покемона через API
     def get_name(self):
         url = f'https://pokeapi.co/api/v2/pokemon/{self.pokemon_number}'
@@ -37,30 +38,42 @@ class Pokemon:
         else:
             return "Pikachu"
 
-        # Метод для получения картинки покемона через API
-    def get_img(self):
-        url = f'https://pokeapi.co/api/v2/pokemon/{self.pokemon_number}'
-        response = requests.get(url)
-        if response.status_code == 200:
-            data = response.json()
-            return (data['sprites']['front_default'])
-        else:
-            return "Pikachu"
-        
-    def get_eat(self):
-        food = random.choice(eating)
-        return food
 
     # Метод класса для получения информации
     def info(self):
-        return f"Имя твоего покеомона: {self.name}"
+        return f"Имя твоего покеомона: {self.name} \n {self.hp} \n {self.power}"
 
     # Метод класса для получения картинки покемона
     def show_img(self):
         return self.img
-    
-    def listing(self):
-        return self.eat
 
+    def attack(self, enemy):
+        if enemy.hp > self.power:
+            enemy.hp -= self.power
+            return f"Сражение @{self.pokemon_trainer} с @{enemy.pokemon_trainer}"
+        else:
+            enemy.hp = 0
+            return f"Победа @{self.pokemon_trainer} над @{enemy.pokemon_trainer}!"
+
+class Wizard(Pokemon):
+    def info(self):
+        return f"это покемон-волшебник"
+    
+class Fighter(Pokemon):
+    def info(self):
+        return f"это покемон-боец"
+    
+    def attack(self,enemy):
+        if isinstance(enemy, Wizard): # Проверка на то, что enemy является типом данных Wizard (является экземпляром класса Волшебник)
+            chance = randint(1,5)
+            if chance == 1:
+                return "Покемон-волшебник применил щит в сражении"
+
+    def attack(self, enemy):
+        super_power = randint(5,15)
+        self.сила += super_power
+        result = super().attack(enemy)
+        self.сила -= super_power
+        return result + f"\n Боец применил супер-атаку силой:{super_power} "
 
 
